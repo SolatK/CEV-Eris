@@ -17,6 +17,9 @@ var/global/list/med_hud_users            = list() // List of all entities using 
 var/global/list/sec_hud_users            = list() // List of all entities using a security HUD.
 var/global/list/hud_icon_reference       = list()
 
+var/global/list/ticket_panels            = list()
+var/global/list/tickets                  = list()
+
 
 var/global/datum/universal_state/universe = new
 
