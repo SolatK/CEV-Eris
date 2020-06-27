@@ -66,11 +66,6 @@ proc/get_open_ticket_by_client(var/client/owner)
 /datum/ticket_panel
 	var/datum/ticket/open_ticket = null
 
-/datum/ticket_panel/tg_ui_interact(mob/user, ui_key = "main", datum/tgui/ui = null, force_open = 0, datum/tgui/master_ui = null, datum/ui_state/state = tg_always_state)
-	ui = tgui_process.try_update_ui(user, src, ui_key, ui, force_open)
-	if(!ui)
-		ui = new(user, src, ui_key, "ticket_panel", "Ticket Manager", 600, 800, master_ui, state)
-		ui.open()
 
 /datum/ticket_panel/ui_data(mob/user)
 	var/list/data = list()
@@ -79,57 +74,29 @@ proc/get_open_ticket_by_client(var/client/owner)
 	data["tickets"] = list()
 	data["messages"] = list()
 
-	for(var/id = tickets.len, id >= 1, id--)
-		var/datum/ticket/ticket = tickets[id]
-		if(user.client.holder || ticket.owner == user)
-			var/open = 0
-			var/status = "Unknown status"
-			switch(ticket.status)
-				if(TICKET_OPEN)
-					open = 1
-					status = "Open, unassigned"
-				if(TICKET_ASSIGNED)
-					open = 1
-					status = "Assigned to [english_list(ticket.assigned_admin_ckeys(), "no one")]"
-				if(TICKET_CLOSED)
-					status = "Closed by [ticket.closed_by.ckey]."
-			data["tickets"] += list(list("id" = id, "owner" = ticket.owner.ckey, "open" = open, "status" = status))
-
-	if(open_ticket)
-		for(var/datum/ticket_msg/msg in open_ticket.msgs)
-			var/msg_to = msg.msg_to ? msg.msg_to : "Adminhelp"
-			data["messages"] += list(list("msg_from" = msg.msg_from, "msg_to" = msg_to, "msg" = msg.msg))
 
 	return data
-
-/datum/ticket_panel/ui_act(action, params)
-	if(..())
-		return
-
-	var/datum/ticket/ticket = tickets[text2num(params["id"])]
-	if(!ticket)
-		return
-
-	switch(action)
-		if("view")
-			open_ticket = ticket
-			return 1
-		if("take")
-			return ticket.take(usr.client)
-		if("close")
-			return ticket.close(usr.client)
 
 
 /client/verb/view_tickets()
 	set name = "View Tickets"
 	set category = "Admin"
-
-	var/datum/ticket_panel/ticket_panel = src.get_ticket_panel()
-	ticket_panel.tg_ui_interact(src.mob)
-
-/client/proc/get_ticket_panel()
-	. = ticket_panels[src.ckey]
-
-	if(!.)
-		. = new /datum/ticket_panel()
-		ticket_panels[src.ckey] = .
+	var/output = {"
+		<table border='1'>
+			<tr>
+				<th>Player:</th>
+				<th>Admins:</th>
+				<th>options:</th>
+			</tr>
+				"}
+	for(var/datum/ticket/ticket in tickets)
+		output += {"
+			<tr>
+				<th>[ticket.owner]</th>
+				<th>[jointext(ticket.assigned_admins, ", ")]</th>
+				<th><a href='?src=\ref[src];action=open'>open</a>/<a href='?src=\ref[src];action=open'>close</a>/<a href='?src=\ref[src];action=open'>join</a></th>
+			</tr>
+			"}
+	var/datum/browser/panel = new(usr, "tickets", "tickets", 500, 500)
+	panel.set_content(output)
+	panel.open()
