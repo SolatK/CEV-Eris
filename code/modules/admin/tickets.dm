@@ -71,6 +71,7 @@ proc/get_open_ticket_by_client(var/client/owner)
 	var/data
 	for(var/datum/ticket_msg/message in msgs)
 		data += "[message.msg_from] to [message.msg_to]: [message.msg]\n"
+		data += "<br>"
 	return data
 
 
@@ -85,11 +86,13 @@ proc/get_open_ticket_by_client(var/client/owner)
 /client/proc/generate_ui(var/datum/browser/panel, var/datum/ticket/selected)
 	var/output = {"
 	<div class='container'>
-	<table border='1'>
+	<table>
 	<tr>
+	<th>
 	<div width='33%' float='left'>
 		<table border='1'>
 			<tr>
+				<th>Status:</th>
 				<th>Player:</th>
 				<th>Admins:</th>
 				<th>options:</th>
@@ -97,12 +100,13 @@ proc/get_open_ticket_by_client(var/client/owner)
 	for(var/datum/ticket/ticket in tickets)
 		output += {"
 			<tr>
+				<th>[ticket.status == TICKET_CLOSED ? "X" : "O"]</th>
 				<th>[ticket.owner]</th>
 				<th>[jointext(ticket.assigned_admins, ", ")]</th>
 				<th><a href='?src=\ref[src];ticket=open_ticket;ticket_src=\ref[ticket];panel_src=\ref[panel]'>open</a>/<a href='?src=\ref[usr];close_ticket=\ref[ticket]'>close</a>/<a href='?src=\ref[src];ticket=join'>join</a></th>
 			</tr>"}
 	output += "</table>"
-	output += "<th>"
+	output += "</th><th>"
 	if(selected)
 		output += selected.get_data()
 	panel.set_content(output)
