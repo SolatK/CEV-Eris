@@ -54,7 +54,8 @@
 		if("open_ticket")
 			var/datum/ticket/ticket = locate(href_list["ticket_src"])
 			var/datum/browser/panel = locate(href_list["panel_src"])
-			get_ticket_data(ticket, panel)
+			generate_ui(panel ,ticket)
+			return
 
 	if(href_list["irc_msg"])
 		if(!holder && received_irc_pm < world.time - 6000) //Worse they can do is spam IRC for 10 minutes

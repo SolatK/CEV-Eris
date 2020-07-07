@@ -67,14 +67,26 @@ proc/get_open_ticket_by_client(var/client/owner)
 	var/datum/ticket/open_ticket = null
 
 
+/datum/ticket/proc/get_data()
+	var/data
+	for(var/datum/ticket_msg/message in msgs)
+		data += "[message.msg_from] to [message.msg_to]: [message.msg]\n"
+	return data
 
 
 /client/verb/view_tickets()
 	set name = "View Tickets"
 	set category = "Admin"
 	var/datum/browser/panel = new(usr, "tickets", "tickets", 500, 500)
+	generate_ui(panel)
+
+
+
+/client/proc/generate_ui(var/datum/browser/panel, var/datum/ticket/selected)
 	var/output = {"
 	<div class='container'>
+	<table border='1'>
+	<tr>
 	<div width='33%' float='left'>
 		<table border='1'>
 			<tr>
@@ -87,25 +99,12 @@ proc/get_open_ticket_by_client(var/client/owner)
 			<tr>
 				<th>[ticket.owner]</th>
 				<th>[jointext(ticket.assigned_admins, ", ")]</th>
-				<th><a href='?src=\ref[src];ticket=open_ticket;ticket_src=\ref[ticket];panel_src=\ref[panel]'>open</a>/<a href='?src=\ref[src];ticket=close_ticket'>close</a>/<a href='?src=\ref[src];ticket=join'>join</a></th>
+				<th><a href='?src=\ref[src];ticket=open_ticket;ticket_src=\ref[ticket];panel_src=\ref[panel]'>open</a>/<a href='?src=\ref[usr];close_ticket=\ref[ticket]'>close</a>/<a href='?src=\ref[src];ticket=join'>join</a></th>
 			</tr>"}
+	output += "</table>"
+	output += "<th>"
+	if(selected)
+		output += selected.get_data()
 	panel.set_content(output)
 	ticket_panels += panel
 	panel.open()
-
-/client/proc/get_ticket_data(var/datum/ticket/ticket, var/datum/browser/panel)
-	var/output = {"</div>
-	<div width='66%' float='left'>
-		[ticket.get_data()]
-	</div>
-	"}
-	panel.add_content(output)
-	panel.open()
-
-
-
-/datum/ticket/proc/get_data()
-	var/data
-	for(var/datum/ticket_msg/message in msgs)
-		data += "[message.msg_from] to [message.msg_to]: [message.msg]\n"
-	return data
